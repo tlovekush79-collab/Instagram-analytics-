@@ -1,0 +1,852 @@
+<title>MEME DEALER AI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: floating sidebar (drawer on phones) beside a scrolling stack of analysis sections.
+   One gold accent on a green-black graphite ground, a nod to the card table behind "dealer". Single dark theme by design. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0f0e; --surface:#121816; --surface-2:#18201d; --line:#25302c;
+  --fg:#e9efec; --muted:#93a39c; --faint:#76857f;
+  --accent:#e9b44c; --accent-ink:#1a1405;
+  --s1:#e9b44c; --s2:#4cc9b0; --s3:#ef6f6c; --s4:#a79bf0;
+  --good:#5ad18f; --warn:#f0883e; --bad:#ff5c6c;
+  --font-display:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 var(--font-body);
+  padding-block:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:90}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:24px;max-width:1380px;margin:0 auto}
+.main{min-width:0;padding-bottom:40px}
+
+/* Sidebar */
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;
+  max-height:calc(100dvh - 32px);overflow:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 4px 16px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.mark{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);
+  font:700 15px/1 var(--font-display);letter-spacing:.02em;flex:none}
+.brand b{display:block;font:700 14px/1.2 var(--font-display);letter-spacing:.06em}
+.brand small{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.nav{display:flex;flex-direction:column;gap:2px}
+.navlink{display:flex;align-items:center;gap:10px;background:none;border:0;text-align:left;padding:9px 10px;border-radius:9px;color:var(--muted);width:100%}
+.navlink::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line);flex:none;transition:background .2s}
+.navlink:hover{background:var(--surface-2);color:var(--fg)}
+.navlink.active{background:var(--surface-2);color:var(--fg)}
+.navlink.active::before{background:var(--accent)}
+.side-foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;line-height:1.5}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;box-shadow:0 0 0 3px rgba(90,209,143,.18)}
+
+/* Mobile top bar */
+.topbar{display:none}
+.scrim{display:none}
+
+/* Headline */
+.head{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin-bottom:4px}
+.head h1{font:700 clamp(26px,5vw,38px)/1.1 var(--font-display);letter-spacing:-.01em;text-wrap:balance}
+.head h1 span{color:var(--accent)}
+.snap{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;color:var(--muted);font-size:12px}
+.lede{color:var(--muted);margin-top:8px;max-width:70ch}
+
+/* Sections */
+.sec{margin-top:32px;scroll-margin-top:16px}
+.sec-h{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:4px}
+h2{font:600 22px/1.2 var(--font-display);letter-spacing:-.005em}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.panel h3{font:600 14px/1.3 var(--font-display);margin-bottom:2px}
+.panel .sub{color:var(--muted);font-size:12px;margin-bottom:12px}
+.stack{display:grid;gap:14px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.kpi .l{color:var(--muted);font-size:12px}
+.kpi .v{font:600 26px/1.15 var(--font-display);margin-top:4px;overflow-wrap:anywhere}
+.kpi .n{color:var(--faint);font-size:12px;margin-top:2px}
+.kpi.zero .v{color:var(--muted)}
+
+/* Hero followers */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:center}
+.bignum{display:block;font:700 clamp(56px,11vw,92px)/1 var(--font-display);color:var(--accent);letter-spacing:-.03em}
+.biglabel{display:block;color:var(--muted);margin-top:6px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+.stats div{background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.stats dt{color:var(--muted);font-size:12px}
+.stats dd{margin:2px 0 0;font:600 20px/1.2 var(--font-display)}
+
+/* Controls */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:2px;background:var(--surface)}
+.seg button{background:none;border:0;border-radius:8px;padding:5px 12px;color:var(--muted);font-size:13px}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);font-size:13px}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chip[aria-pressed=true]{color:var(--fg);border-color:var(--faint)}
+.chip[aria-pressed=false]{opacity:.55}
+.chart{position:relative;height:290px}
+.chart.tall{height:340px}
+.chart.short{height:240px}
+.chart-fail{display:none;color:var(--muted);padding:20px}
+
+/* Unavailable */
+.na{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;color:var(--muted);font-size:13px}
+.tag{flex:none;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;border-radius:6px;padding:2px 7px;border:1px solid var(--line);color:var(--faint);background:var(--surface-2)}
+.tag.ok{color:var(--good);border-color:rgba(90,209,143,.4)}
+.tag.warn{color:var(--warn);border-color:rgba(240,136,62,.4)}
+.tag.bad{color:var(--bad);border-color:rgba(255,92,108,.4)}
+.insight{border-left:2px solid var(--accent);padding:2px 0 2px 12px;color:var(--fg);margin-top:2px}
+.insight span{color:var(--muted)}
+
+/* Audience */
+.legend{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}
+.legend li{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.legend li span:first-child{display:flex;align-items:center;gap:8px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.bars{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.bars .r{display:flex;justify-content:space-between;gap:10px;margin-bottom:5px}
+.bars .r b{font-weight:500}
+.track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.track div{height:100%;background:var(--s2);border-radius:99px}
+
+/* Reels */
+.reels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.reel{display:grid;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;min-width:0}
+.reel-h{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.rank{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--surface-2);font:700 15px/1 var(--font-display);color:var(--accent)}
+.reel-h .t{flex:1;min-width:0}
+.reel-h h3{font:600 17px/1.25 var(--font-display)}
+.reel-h p{color:var(--muted);font-size:12px;margin-top:2px}
+.reel a{color:var(--accent);text-decoration:none;font-size:13px;white-space:nowrap}
+.reel a:hover{text-decoration:underline}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px}
+.m{background:var(--surface-2);border-radius:10px;padding:9px 10px;min-width:0}
+.m .l{color:var(--muted);font-size:11px}
+.m .v{font:600 16px/1.25 var(--font-display);margin-top:1px}
+.skipbar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:6px}
+.skipbar div{height:100%;border-radius:99px}
+
+/* Recommendations */
+.recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:14px}
+.rec{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.rec.done{opacity:.55}
+.rec-h{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.rec h3{font:600 16px/1.3 var(--font-display)}
+.rec .ev{color:var(--muted);font-size:13px}
+.rec .act{font-size:13px}
+.rec .act b{color:var(--accent);font-weight:600}
+.rec label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer}
+.rec input{width:16px;height:16px;accent-color:var(--accent)}
+
+/* Live */
+.live{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.clock{font:600 28px/1.1 var(--font-display);margin-top:4px}
+.spark{display:block;width:100%;height:36px;margin-top:8px}
+.cov{width:100%;border-collapse:collapse;font-size:13px}
+.cov th,.cov td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.cov th{color:var(--muted);font-weight:500;font-size:12px}
+.cov tr:last-child td{border-bottom:0}
+.scroll-x{overflow-x:auto}
+.foot{margin-top:32px;color:var(--faint);font-size:12px;max-width:80ch}
+
+@media (max-width:960px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .topbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:70;align-items:center;gap:12px;
+    background:rgba(11,15,14,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+    margin:-16px calc(-1 * max(16px,env(safe-area-inset-left,0px))) 16px;
+    padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+  .topbar .menu{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:13px}
+  .topbar b{font:700 14px/1 var(--font-display);letter-spacing:.06em;flex:1;min-width:0}
+  .topbar .snap{padding:4px 10px}
+  .side{position:fixed;inset:0 auto 0 0;z-index:100;width:min(86vw,300px);max-height:none;border-radius:0 var(--radius) var(--radius) 0;
+    padding-top:calc(env(safe-area-inset-top,0px) + 16px);padding-left:calc(16px + env(safe-area-inset-left,0px));
+    transform:translateX(-105%);visibility:hidden;transition:transform .25s ease,visibility 0s linear .25s}
+  .side.open{transform:none;visibility:visible;transition:transform .25s ease}
+  .scrim{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.55)}
+  .scrim.show{display:block}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .two{grid-template-columns:minmax(0,1fr)}
+  .sec{scroll-margin-top:70px}
+}
+@media (max-width:480px){
+  .panel{padding:14px}
+  .chart{height:250px}
+  h2{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+
+<div class="shell">
+  <aside class="side" id="side" aria-label="Dashboard navigation">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">MD</span>
+      <div><b>MEME DEALER AI</b><small>@meme1dealerofficial</small></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <button class="navlink active" data-target="followers">Total Followers</button>
+      <button class="navlink" data-target="growth">Follower Growth</button>
+      <button class="navlink" data-target="reach">Views and Reach</button>
+      <button class="navlink" data-target="engagement">Engagement</button>
+      <button class="navlink" data-target="audience">Audience</button>
+      <button class="navlink" data-target="reels">Best Reels</button>
+      <button class="navlink" data-target="timing">Posting Time</button>
+      <button class="navlink" data-target="ai">AI Recommendations</button>
+      <button class="navlink" data-target="live">Real-time Data</button>
+    </nav>
+    <div class="side-foot"><span class="dot"></span>Instagram connected through Windsor.ai<br>Data window: 14 Oct to 12 Nov 2026</div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu" id="menuBtn" aria-expanded="false" aria-controls="side">Menu</button>
+      <b>MEME DEALER AI</b>
+      <span class="snap"><span class="dot" style="margin:0"></span>Snapshot</span>
+    </div>
+
+    <header>
+      <div class="head">
+        <h1>MEME DEALER <span>AI</span></h1>
+        <span class="snap"><span class="dot" style="margin:0"></span>Snapshot of 14 Oct to 12 Nov 2026</span>
+      </div>
+      <p class="lede">Instagram analytics for @meme1dealerofficial, built from the numbers pulled through Windsor.ai. Metrics that were not collected are marked Unavailable. Nothing here is estimated.</p>
+    </header>
+
+    <!-- 1 Followers -->
+    <section class="sec" id="followers">
+      <div class="sec-h"><div><div class="eyebrow">Account</div><h2>Total Followers</h2></div></div>
+      <div class="stack">
+        <div class="panel hero">
+          <div>
+            <span class="bignum" id="bigFollowers">260</span>
+            <span class="biglabel">followers on 14 Nov 2026</span>
+          </div>
+          <dl class="stats">
+            <div><dt>Following</dt><dd>253</dd></div>
+            <div><dt>Posts published</dt><dd>82</dd></div>
+            <div><dt>Followers per account followed</dt><dd id="ratio">1.03</dd></div>
+            <div><dt>New followers, last 30 days</dt><dd id="f30">16</dd></div>
+          </dl>
+        </div>
+        <div class="na"><span class="tag">Unavailable</span><span>Follower count history and unfollows were not collected, so net growth cannot be calculated. The growth section below shows new followers only.</span></div>
+      </div>
+    </section>
+
+    <!-- 2 Growth -->
+    <section class="sec" id="growth">
+      <div class="sec-h">
+        <div><div class="eyebrow">Growth</div><h2>New Followers Growth</h2></div>
+        <div class="seg range-seg" role="group" aria-label="Date range"></div>
+      </div>
+      <div class="stack">
+        <div class="kpis">
+          <div class="kpi"><div class="l">New followers</div><div class="v" id="gTotal">0</div><div class="n" id="gTotalN"></div></div>
+          <div class="kpi"><div class="l">Best day</div><div class="v" id="gBest">0</div><div class="n" id="gBestN"></div></div>
+          <div class="kpi"><div class="l">Days with new followers</div><div class="v" id="gDays">0</div><div class="n" id="gDaysN"></div></div>
+        </div>
+        <div class="panel">
+          <h3>New followers per day</h3>
+          <p class="sub">Bars show each day. The line adds them up across the selected range.</p>
+          <div class="chart"><canvas id="cGrowth" role="img" aria-label="Bar and line chart of new followers per day and cumulative new followers"></canvas></div>
+          <p class="chart-fail">Charts could not load. The figures above still show the totals.</p>
+        </div>
+        <p class="insight" id="gInsight"></p>
+      </div>
+    </section>
+
+    <!-- 3 Reach -->
+    <section class="sec" id="reach">
+      <div class="sec-h">
+        <div><div class="eyebrow">Visibility</div><h2>Total Views and Reach</h2></div>
+        <div class="seg range-seg" role="group" aria-label="Date range"></div>
+      </div>
+      <div class="stack">
+        <div class="kpis">
+          <div class="kpi"><div class="l">Total views</div><div class="v" id="rViews">0</div><div class="n" id="rViewsN"></div></div>
+          <div class="kpi"><div class="l">Peak daily reach</div><div class="v" id="rPeak">0</div><div class="n" id="rPeakN"></div></div>
+          <div class="kpi"><div class="l">Average daily reach</div><div class="v" id="rAvg">0</div><div class="n">Mean of the daily figures</div></div>
+          <div class="kpi"><div class="l">Reel views (4 reels)</div><div class="v" id="rReelViews">0</div><div class="n" id="rReelReach"></div></div>
+        </div>
+        <div class="panel">
+          <h3>Daily views and reach</h3>
+          <p class="sub">Reach counts unique accounts. Views count every play. Tap a chip to hide a line.</p>
+          <div class="chips">
+            <button class="chip" data-ds="0" aria-pressed="true"><i style="background:var(--s1)"></i>Views</button>
+            <button class="chip" data-ds="1" aria-pressed="true"><i style="background:var(--s2)"></i>Reach</button>
+            <button class="chip" id="logBtn" aria-pressed="false">Log scale</button>
+          </div>
+          <div class="chart tall"><canvas id="cReach" role="img" aria-label="Line chart of daily views and reach"></canvas></div>
+          <p class="chart-fail">Charts could not load.</p>
+        </div>
+        <p class="insight" id="rInsight"></p>
+        <div class="na"><span class="tag">Unavailable</span><span>Reach and views split between followers and non-followers. The field exists in Windsor.ai but was not pulled. A single total reach for the whole period is also not shown, because daily reach cannot be added without double counting people.</span></div>
+      </div>
+    </section>
+
+    <!-- 4 Engagement -->
+    <section class="sec" id="engagement">
+      <div class="sec-h">
+        <div><div class="eyebrow">Interaction</div><h2>Likes, Shares, Saves and Comments</h2></div>
+        <div class="seg range-seg" role="group" aria-label="Date range"></div>
+      </div>
+      <div class="stack">
+        <div class="kpis">
+          <div class="kpi"><div class="l">Likes</div><div class="v" id="eLikes">0</div></div>
+          <div class="kpi"><div class="l">Shares</div><div class="v" id="eShares">0</div></div>
+          <div class="kpi"><div class="l">Saves (net)</div><div class="v" id="eSaves">0</div></div>
+          <div class="kpi" id="eCommentsBox"><div class="l">Comments</div><div class="v" id="eComments">0</div></div>
+          <div class="kpi"><div class="l">Total interactions</div><div class="v" id="eInter">0</div><div class="n">All content types</div></div>
+          <div class="kpi"><div class="l">Peak accounts engaged</div><div class="v" id="eEngaged">0</div><div class="n" id="eEngagedN"></div></div>
+        </div>
+        <div class="panel">
+          <h3>Daily likes, shares and saves</h3>
+          <p class="sub">Comments were 0 on every day, so they have no bars. Instagram reports saves as a net figure, so a day can dip below zero when people unsave.</p>
+          <div class="chart"><canvas id="cEng" role="img" aria-label="Stacked bar chart of daily likes, shares and saves"></canvas></div>
+          <p class="chart-fail">Charts could not load.</p>
+        </div>
+        <p class="insight" id="eInsight"></p>
+      </div>
+    </section>
+
+    <!-- 5 Audience -->
+    <section class="sec" id="audience">
+      <div class="sec-h"><div><div class="eyebrow">Who follows you</div><h2>Audience Demographics</h2></div></div>
+      <div class="stack">
+        <div class="two">
+          <div class="panel">
+            <h3>Age groups</h3>
+            <p class="sub">Followers per group. Total 260.</p>
+            <div class="chart short"><canvas id="cAge" role="img" aria-label="Bar chart of followers by age group"></canvas></div>
+            <p class="chart-fail">Charts could not load.</p>
+          </div>
+          <div class="panel">
+            <h3>Gender</h3>
+            <p class="sub">Instagram reports 55 followers as unspecified.</p>
+            <div class="chart short"><canvas id="cGender" role="img" aria-label="Doughnut chart of followers by gender"></canvas></div>
+            <p class="chart-fail">Charts could not load.</p>
+            <ul class="legend" id="genderLegend"></ul>
+          </div>
+        </div>
+        <div class="two">
+          <div class="panel">
+            <h3>Countries</h3>
+            <p class="sub">Share of 260 followers.</p>
+            <ul class="bars" id="countryBars"></ul>
+          </div>
+          <div class="panel">
+            <h3>Top cities</h3>
+            <p class="sub">Top 10 of 45 cities Instagram reports.</p>
+            <div class="chart"><canvas id="cCity" role="img" aria-label="Bar chart of followers by city"></canvas></div>
+            <p class="chart-fail">Charts could not load.</p>
+          </div>
+        </div>
+        <p class="insight" id="aInsight"></p>
+      </div>
+    </section>
+
+    <!-- 6 Reels -->
+    <section class="sec" id="reels">
+      <div class="sec-h">
+        <div><div class="eyebrow">Content</div><h2>Best Performing Reels</h2></div>
+        <div class="seg" id="sortSeg" role="group" aria-label="Rank reels by">
+          <button data-sort="views" aria-pressed="true">Views</button>
+          <button data-sort="reach" aria-pressed="false">Reach</button>
+          <button data-sort="er" aria-pressed="false">Engagement</button>
+          <button data-sort="skip" aria-pressed="false">Skip rate</button>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="reels" id="reelList"></div>
+        <div class="panel">
+          <h3>Views, reach and skip rate by reel</h3>
+          <p class="sub">Bars use the left axis. The line is the share of viewers who left within 3 seconds, on the right axis.</p>
+          <div class="chart"><canvas id="cReels" role="img" aria-label="Combined chart of views, reach and skip rate for each reel"></canvas></div>
+          <p class="chart-fail">Charts could not load.</p>
+        </div>
+        <p class="insight" id="reelInsight"></p>
+        <div class="na"><span class="tag">Unavailable</span><span>Comments on reels were 0 on all four. Followers gained per reel is not supported by Instagram for reels. Only reels and posts from the last 30 days are in this data.</span></div>
+      </div>
+    </section>
+
+    <!-- 7 Timing -->
+    <section class="sec" id="timing">
+      <div class="sec-h"><div><div class="eyebrow">Schedule</div><h2>Best Posting Time</h2></div></div>
+      <div class="stack">
+        <div class="two">
+          <div class="panel" style="display:grid;gap:10px;align-content:start">
+            <div class="eyebrow" style="margin:0">Suggested test window</div>
+            <div class="clock" style="color:var(--accent)">3 PM to 5 PM IST</div>
+            <p style="color:var(--muted)">Your two best reels went live at 3:17 PM and 4:52 PM. They reached 3,887 and 8,691 accounts and had the lowest skip rates. The 10:50 AM and 8:03 PM reels reached about 1,200 to 1,400 each.</p>
+            <div><span class="tag warn">Low confidence</span> <span style="color:var(--muted);font-size:13px">Only 4 reels. Treat this as a test, not a rule.</span></div>
+          </div>
+          <div class="panel">
+            <h3>Reach by posting time</h3>
+            <p class="sub">Each bubble is a reel. Higher means more reach, larger means more views. The shaded band is 3 to 5 PM.</p>
+            <div class="chart short"><canvas id="cTime" role="img" aria-label="Bubble chart of reel reach by time of day posted"></canvas></div>
+            <p class="chart-fail">Charts could not load.</p>
+          </div>
+        </div>
+        <div class="na"><span class="tag">Unavailable</span><span>The hours when your followers are online, and day-of-week patterns. Windsor.ai does not return them for this account, and 4 reels are too few to compare days. Check Insights in the Instagram app for the online-hours view.</span></div>
+      </div>
+    </section>
+
+    <!-- 8 AI -->
+    <section class="sec" id="ai">
+      <div class="sec-h">
+        <div><div class="eyebrow">Next steps</div><h2>AI Growth Recommendations</h2></div>
+        <span class="snap" id="recProgress">0 of 8 done</span>
+      </div>
+      <div class="stack">
+        <p class="lede" style="margin:0">Written by Claude from the numbers in this dashboard only. Each card shows the evidence behind it. Tick a card when you finish it. Ticks are saved in this browser.</p>
+        <div class="recs" id="recList"></div>
+      </div>
+    </section>
+
+    <!-- 9 Live -->
+    <section class="sec" id="live">
+      <div class="sec-h"><div><div class="eyebrow">Status</div><h2>Real-time Data</h2></div></div>
+      <div class="stack">
+        <div class="live">
+          <div class="kpi"><div class="l">Live time in India</div><div class="clock" id="clock">--:--:--</div><div class="n" id="clockDate"></div></div>
+          <div class="kpi"><div class="l">Since the last reel in this data (21 Oct)</div><div class="clock" id="sinceReel">-</div><div class="n">Counts up live</div></div>
+          <div class="kpi"><div class="l">Latest day with data</div><div class="clock">12 Nov 2026</div><div class="n" id="dataAge"></div></div>
+          <div class="kpi"><div class="l">Reach momentum</div><div class="clock" id="momentum">-</div><div class="n" id="momentumN"></div></div>
+        </div>
+        <div class="two">
+          <div class="panel"><h3>Reach, last 14 days</h3><p class="sub" id="spReachN"></p><svg class="spark" id="spReach" viewBox="0 0 220 36" preserveAspectRatio="none" role="img" aria-label="Sparkline of reach over the last 14 days"></svg></div>
+          <div class="panel"><h3>Views, last 14 days</h3><p class="sub" id="spViewsN"></p><svg class="spark" id="spViews" viewBox="0 0 220 36" preserveAspectRatio="none" role="img" aria-label="Sparkline of views over the last 14 days"></svg></div>
+        </div>
+        <div class="panel">
+          <h3>Connection and data coverage</h3>
+          <p class="sub">The clock and counters above are live. Instagram figures are a snapshot from 14 Nov 2026 and do not refresh on their own. Ask Claude to pull fresh numbers and update this page.</p>
+          <div class="scroll-x"><table class="cov"><thead><tr><th>Metric</th><th>Status</th><th>Note</th></tr></thead><tbody id="covBody"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="foot">Source: Instagram data for @meme1dealerofficial via Windsor.ai, covering 14 Oct to 12 Nov 2026. That is the 30 days of history the current Windsor.ai plan allows, so earlier months are not available. Times are shown in India Standard Time.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/*DATA*/
+const START=Date.UTC(2026,9,14);
+const D={
+  reach:[956,1499,384,3975,283,314,289,8000,886,133,70,83,62,86,75,122,86,73,64,91,64,26,50,26,23,18,18,12,11,15],
+  views:[1283,1924,517,5290,369,438,406,11970,1248,173,93,104,92,160,94,173,124,91,74,118,92,35,67,31,32,22,24,12,15,18],
+  newF:[1,0,0,1,0,0,0,5,0,0,0,0,0,4,0,0,0,0,0,0,0,2,1,0,0,0,1,1,0,0],
+  engaged:[26,29,14,45,6,10,10,108,24,1,2,3,1,6,1,5,4,2,2,2,2,1,0,3,0,1,0,0,0,0],
+  inter:[47,39,17,59,11,22,11,121,23,0,2,3,1,10,9,5,5,3,2,5,5,0,-1,2,-1,1,0,0,0,0],
+  likes:[18,31,7,40,2,5,5,97,22,0,2,2,1,6,0,4,5,1,2,2,1,1,0,3,0,1,0,0,0,0],
+  comments:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  shares:[13,2,4,8,5,8,2,9,0,0,0,1,0,2,5,1,0,1,0,1,2,0,0,0,0,0,0,0,0,0],
+  saves:[2,2,2,2,-1,0,2,5,1,0,0,-1,0,0,0,-1,0,0,0,1,0,-1,-1,0,-1,0,0,0,0,0]
+};
+const PROFILE={followers:260,following:253,posts:82};
+const AGE=[['13-17',7],['18-24',52],['25-34',108],['35-44',67],['45-54',18],['55-64',7],['65+',1]];
+const GENDER=[['Male',167],['Female',38],['Unspecified',55]];
+const COUNTRY=[['India',244],['Pakistan',5],['Bangladesh',2],['Nepal',2]];
+const COUNTRY_OTHER={n:7,each:1};
+const CITY=[['Delhi',16],['Noida',13],['Kolkata',11],['Bangalore',10],['Mumbai',7],['Guwahati',5],['Pune',4],['Ahmedabad',4],['Indore',4],['Greater Noida',4]];
+const REELS=[
+  {title:'Singh Is Kinng',sub:'Bollywood comedy, 2008',when:'Wed 21 Oct, 4:52 PM IST',hour:16+52/60,views:13253,reach:8691,likes:108,comments:0,shares:3,saves:5,eng:118,skip:0.277,watch:8.149,total:71666721,url:'https://www.instagram.com/reel/DewSgjAP4DA/'},
+  {title:'Mirzapur',sub:'Web series clip',when:'Sat 17 Oct, 3:17 PM IST',hour:15+17/60,views:5106,reach:3887,likes:34,comments:0,shares:2,saves:2,eng:40,skip:0.301,watch:17.924,total:70800747,url:'https://www.instagram.com/reel/Del0gDJv2lz/'},
+  {title:'Dhamaal',sub:'Bollywood comedy, 2007',when:'Wed 14 Oct, 10:50 AM IST',hour:10+50/60,views:1849,reach:1377,likes:25,comments:0,shares:4,saves:1,eng:31,skip:0.508,watch:7.623,total:10467001,url:'https://www.instagram.com/reel/DednkBUvbDX/'},
+  {title:'Khatta Meetha',sub:'Bollywood comedy, 2010',when:'Thu 15 Oct, 8:03 PM IST',hour:20+3/60,views:1582,reach:1207,likes:22,comments:0,shares:1,saves:1,eng:26,skip:0.524,watch:6.497,total:8141535,url:'https://www.instagram.com/reel/DehLVHNu70-/'}
+];
+/*END*/
+
+(function(){
+'use strict';
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const nf=new Intl.NumberFormat('en-IN');
+const N=D.reach.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const pct=(v,d)=>(v*100).toFixed(d==null?1:d)+'%';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const dates=Array.from({length:N},(_,i)=>new Date(START+i*864e5));
+const LAB=dates.map(d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}));
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={bg:css('--bg'),surface:css('--surface'),surface2:css('--surface-2'),line:css('--line'),fg:css('--fg'),muted:css('--muted'),faint:css('--faint'),
+  s1:css('--s1'),s2:css('--s2'),s3:css('--s3'),s4:css('--s4'),good:css('--good'),warn:css('--warn'),bad:css('--bad')};
+const rgba=(hex,a)=>{const h=hex.replace('#','');return 'rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)+','+a+')';};
+let range=30;
+const sl=a=>a.slice(-range);
+const labs=()=>LAB.slice(-range);
+const setText=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+
+/* ---------- Followers hero ---------- */
+setText('ratio',(PROFILE.followers/PROFILE.following).toFixed(2));
+setText('f30',nf.format(sum(D.newF)));
+
+/* ---------- Charts availability ---------- */
+const hasChart=typeof Chart!=='undefined';
+if(!hasChart){
+  $$('.chart').forEach(c=>{c.style.display='none'});
+  $$('.chart-fail').forEach(c=>{c.style.display='block'});
+}
+const charts={};
+if(hasChart){
+  Chart.defaults.font.family="Inter,system-ui,sans-serif";
+  Chart.defaults.font.size=12;
+  Chart.defaults.color=C.muted;
+  Chart.defaults.borderColor=C.line;
+  if(reduce)Chart.defaults.animation=false;
+  const tt=Chart.defaults.plugins.tooltip;
+  tt.backgroundColor=C.surface2;tt.titleColor=C.fg;tt.bodyColor=C.fg;tt.borderColor=C.line;tt.borderWidth=1;tt.padding=10;tt.cornerRadius=8;
+  Chart.defaults.plugins.legend.labels.usePointStyle=true;
+  Chart.defaults.plugins.legend.labels.boxWidth=8;
+}
+const grid={color:C.line};
+const noGrid={display:false};
+
+function buildCharts(){
+  if(!hasChart)return;
+
+  charts.growth=new Chart($('#cGrowth'),{
+    data:{labels:[],datasets:[
+      {type:'bar',label:'New followers',data:[],backgroundColor:C.s1,borderRadius:4,maxBarThickness:22,order:2,yAxisID:'y'},
+      {type:'line',label:'Cumulative in range',data:[],borderColor:C.s2,backgroundColor:C.s2,pointRadius:0,pointHoverRadius:4,borderWidth:2,tension:.25,order:1,yAxisID:'y1'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{grid:noGrid,ticks:{maxTicksLimit:8,maxRotation:0}},
+        y:{beginAtZero:true,grid:grid,ticks:{precision:0},title:{display:true,text:'Per day',color:C.faint}},
+        y1:{position:'right',beginAtZero:true,grid:noGrid,ticks:{precision:0},title:{display:true,text:'Cumulative',color:C.faint}}},
+      plugins:{legend:{position:'bottom'}}}
+  });
+
+  charts.reach=new Chart($('#cReach'),{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Views',data:[],borderColor:C.s1,backgroundColor:rgba(C.s1,.14),fill:true,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25},
+      {label:'Reach',data:[],borderColor:C.s2,backgroundColor:rgba(C.s2,.1),fill:true,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{grid:noGrid,ticks:{maxTicksLimit:8,maxRotation:0}},y:{type:'linear',beginAtZero:true,grid:grid,ticks:{callback:v=>nf.format(v)}}},
+      plugins:{legend:{display:false}}}
+  });
+
+  charts.eng=new Chart($('#cEng'),{
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'Likes',data:[],backgroundColor:C.s1,borderRadius:2,maxBarThickness:22},
+      {label:'Shares',data:[],backgroundColor:C.s2,borderRadius:2,maxBarThickness:22},
+      {label:'Saves (net)',data:[],backgroundColor:C.s3,borderRadius:2,maxBarThickness:22}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{stacked:true,grid:noGrid,ticks:{maxTicksLimit:8,maxRotation:0}},y:{stacked:true,grid:grid,ticks:{precision:0}}},
+      plugins:{legend:{position:'bottom'}}}
+  });
+
+  const ageTotal=sum(AGE.map(a=>a[1]));
+  const ageMax=Math.max.apply(null,AGE.map(a=>a[1]));
+  charts.age=new Chart($('#cAge'),{
+    type:'bar',
+    data:{labels:AGE.map(a=>a[0]),datasets:[{label:'Followers',data:AGE.map(a=>a[1]),backgroundColor:AGE.map(a=>a[1]===ageMax?C.s1:C.s2),borderRadius:4,maxBarThickness:22}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:grid,beginAtZero:true,ticks:{precision:0}},y:{grid:noGrid}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+' followers ('+pct(c.parsed.x/ageTotal)+')'}}}}
+  });
+
+  const gTotal=sum(GENDER.map(g=>g[1]));
+  const gCols=[C.s2,C.s3,C.faint];
+  charts.gender=new Chart($('#cGender'),{
+    type:'doughnut',
+    data:{labels:GENDER.map(g=>g[0]),datasets:[{data:GENDER.map(g=>g[1]),backgroundColor:gCols,borderColor:C.surface,borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+' ('+pct(c.parsed/gTotal)+')'}}}}
+  });
+  $('#genderLegend').innerHTML=GENDER.map((g,i)=>'<li><span><i style="background:'+gCols[i]+'"></i>'+g[0]+'</span><span>'+g[1]+' &middot; '+pct(g[1]/gTotal)+'</span></li>').join('');
+
+  charts.city=new Chart($('#cCity'),{
+    type:'bar',
+    data:{labels:CITY.map(c=>c[0]),datasets:[{label:'Followers',data:CITY.map(c=>c[1]),backgroundColor:C.s2,borderRadius:4,maxBarThickness:20}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{grid:grid,beginAtZero:true,ticks:{precision:0}},y:{grid:noGrid}},
+      plugins:{legend:{display:false}}}
+  });
+
+  charts.time=new Chart($('#cTime'),{
+    type:'bubble',
+    data:{datasets:[{label:'Reels',data:REELS.map(r=>({x:r.hour,y:r.reach,r:Math.max(6,Math.sqrt(r.views)/6.5),reel:r})),
+      backgroundColor:rgba(C.s1,.55),borderColor:C.s1,borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{min:8,max:22,grid:grid,ticks:{stepSize:2,callback:h=>((h%12)||12)+(h<12?' AM':' PM')},title:{display:true,text:'Time posted (IST)',color:C.faint}},
+        y:{beginAtZero:true,grid:grid,ticks:{callback:v=>nf.format(v)},title:{display:true,text:'Reach',color:C.faint}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        title:i=>i[0].raw.reel.title,
+        label:c=>{const r=c.raw.reel;return [r.when,'Reach '+nf.format(r.reach)+' · Views '+nf.format(r.views),'Skip rate '+pct(r.skip)];}}}}},
+    plugins:[{id:'band',beforeDatasetsDraw(ch){
+      const a=ch.chartArea,x=ch.scales.x;const x1=x.getPixelForValue(15),x2=x.getPixelForValue(17);
+      const c=ch.ctx;c.save();c.fillStyle=rgba(C.s1,.1);c.fillRect(x1,a.top,x2-x1,a.bottom-a.top);c.restore();}}]
+  });
+}
+
+/* ---------- Range-driven sections ---------- */
+function renderRange(){
+  const nf1=sl(D.newF),lb=labs();
+  const tot=sum(nf1);
+  setText('gTotal',nf.format(tot));
+  setText('gTotalN','Last '+range+' days');
+  const bestV=Math.max.apply(null,nf1);
+  const bestI=nf1.indexOf(bestV);
+  setText('gBest',nf.format(bestV));
+  setText('gBestN',bestV>0?lb[bestI]:'No new followers');
+  const days=nf1.filter(v=>v>0).length;
+  setText('gDays',days+' of '+range);
+  setText('gDaysN',nf.format(range-days)+' days with none');
+  if(charts.growth){
+    let run=0;
+    charts.growth.data.labels=lb;
+    charts.growth.data.datasets[0].data=nf1;
+    charts.growth.data.datasets[1].data=nf1.map(v=>run+=v);
+    charts.growth.update();
+  }
+
+  const v=sl(D.views),r=sl(D.reach);
+  setText('rViews',nf.format(sum(v)));
+  setText('rViewsN','Last '+range+' days');
+  const pk=Math.max.apply(null,r),pi=r.indexOf(pk);
+  setText('rPeak',nf.format(pk));
+  setText('rPeakN',lb[pi]);
+  setText('rAvg',nf.format(Math.round(sum(r)/r.length)));
+  if(charts.reach){
+    charts.reach.data.labels=lb;
+    charts.reach.data.datasets[0].data=v;
+    charts.reach.data.datasets[1].data=r;
+    charts.reach.update();
+  }
+
+  const lk=sl(D.likes),sh=sl(D.shares),sv=sl(D.saves),cm=sl(D.comments),it=sl(D.inter),en=sl(D.engaged);
+  setText('eLikes',nf.format(sum(lk)));
+  setText('eShares',nf.format(sum(sh)));
+  setText('eSaves',nf.format(sum(sv)));
+  setText('eComments',nf.format(sum(cm)));
+  $('#eCommentsBox').classList.toggle('zero',sum(cm)===0);
+  setText('eInter',nf.format(sum(it)));
+  const ep=Math.max.apply(null,en);
+  setText('eEngaged',nf.format(ep));
+  setText('eEngagedN',lb[en.indexOf(ep)]);
+  if(charts.eng){
+    charts.eng.data.labels=lb;
+    charts.eng.data.datasets[0].data=lk;
+    charts.eng.data.datasets[1].data=sh;
+    charts.eng.data.datasets[2].data=sv;
+    charts.eng.update();
+  }
+
+  /* Plain-language reads, computed from the selected range */
+  const g=$('#gInsight');
+  g.innerHTML=tot===0?'No new followers in the last '+range+' days.':
+    '<span>Read:</span> '+tot+' new follower'+(tot===1?'':'s')+' arrived on '+days+' day'+(days===1?'':'s')+'. The best day, '+lb[bestI]+', brought '+bestV+'.';
+  const peakShare=pk/Math.max(1,sum(r));
+  $('#rInsight').innerHTML='<span>Read:</span> Reach peaked at '+nf.format(pk)+' on '+lb[pi]+'. That single day is '+pct(peakShare,0)+' of the summed daily reach in this range, so one reel drives most of your visibility.';
+  const ints=sum(it),cmT=sum(cm);
+  $('#eInsight').innerHTML='<span>Read:</span> '+nf.format(sum(lk))+' likes and '+nf.format(sum(sh))+' shares came with '+(cmT===0?'no comments at all':nf.format(cmT)+' comments')+'. Total interactions in this range: '+nf.format(ints)+'.';
+
+  $$('.range-seg').forEach(seg=>$$('button',seg).forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.r===range))));
+}
+$$('.range-seg').forEach(seg=>{
+  seg.innerHTML=[7,14,30].map(n=>'<button data-r="'+n+'" aria-pressed="'+(n===30)+'">'+n+' days</button>').join('');
+  seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;range=+b.dataset.r;renderRange();});
+});
+
+/* Reach chart controls */
+$$('.chip[data-ds]').forEach(chip=>chip.addEventListener('click',()=>{
+  const on=chip.getAttribute('aria-pressed')!=='true';
+  chip.setAttribute('aria-pressed',String(on));
+  if(charts.reach){charts.reach.setDatasetVisibility(+chip.dataset.ds,on);charts.reach.update();}
+}));
+$('#logBtn').addEventListener('click',e=>{
+  const b=e.currentTarget,on=b.getAttribute('aria-pressed')!=='true';
+  b.setAttribute('aria-pressed',String(on));
+  if(charts.reach){
+    const y=charts.reach.options.scales.y;
+    y.type=on?'logarithmic':'linear';
+    y.beginAtZero=!on;
+    charts.reach.update();
+  }
+});
+
+/* ---------- Static derived reads ---------- */
+setText('rReelViews',nf.format(sum(REELS.map(r=>r.views))));
+setText('rReelReach','Reach '+nf.format(sum(REELS.map(r=>r.reach)))+' (reel totals)');
+
+const ageTot=sum(AGE.map(a=>a[1]));
+const core=AGE.filter(a=>a[0]==='25-34'||a[0]==='35-44').reduce((s,a)=>s+a[1],0);
+const male=GENDER[0][1];
+$('#aInsight').innerHTML='<span>Read:</span> '+pct(core/ageTot)+' of followers are 25 to 44, '+pct(male/sum(GENDER.map(g=>g[1])))+' are male, and '+pct(COUNTRY[0][1]/ageTot)+' are in India. Delhi, Noida, Kolkata and Bangalore are the biggest cities.';
+$('#countryBars').innerHTML=COUNTRY.map(c=>'<li><div class="r"><b>'+c[0]+'</b><span>'+c[1]+' &middot; '+pct(c[1]/ageTot)+'</span></div><div class="track"><div style="width:'+Math.max(1.5,c[1]/ageTot*100)+'%"></div></div></li>').join('')
+  +'<li><div class="r"><b>Other ('+COUNTRY_OTHER.n+' countries, 1 each)</b><span>'+(COUNTRY_OTHER.n*COUNTRY_OTHER.each)+' &middot; '+pct(COUNTRY_OTHER.n/ageTot)+'</span></div><div class="track"><div style="width:'+Math.max(1.5,COUNTRY_OTHER.n/ageTot*100)+'%"></div></div></li>';
+
+/* ---------- Reels ---------- */
+REELS.forEach(r=>{r.er=r.eng/r.reach;r.hours=r.total/3.6e6;});
+const avgSkip=sum(REELS.map(r=>r.skip))/REELS.length;
+let sortKey='views';
+function renderReels(){
+  const asc=sortKey==='skip';
+  const list=REELS.slice().sort((a,b)=>asc?a[sortKey]-b[sortKey]:b[sortKey]-a[sortKey]);
+  $('#reelList').innerHTML=list.map((r,i)=>{
+    const good=r.skip<avgSkip;
+    return '<article class="reel"><div class="reel-h"><span class="rank" aria-label="Rank '+(i+1)+'">'+(i+1)+'</span>'
+    +'<div class="t"><h3>'+r.title+'</h3><p>'+r.sub+' &middot; '+r.when+'</p></div>'
+    +'<a href="'+r.url+'" target="_blank" rel="noopener">Open</a></div>'
+    +'<div class="mgrid">'
+    +'<div class="m"><div class="l">Views</div><div class="v">'+nf.format(r.views)+'</div></div>'
+    +'<div class="m"><div class="l">Reach</div><div class="v">'+nf.format(r.reach)+'</div></div>'
+    +'<div class="m"><div class="l">Likes</div><div class="v">'+r.likes+'</div></div>'
+    +'<div class="m"><div class="l">Shares</div><div class="v">'+r.shares+'</div></div>'
+    +'<div class="m"><div class="l">Saves</div><div class="v">'+r.saves+'</div></div>'
+    +'<div class="m"><div class="l">Comments</div><div class="v">'+r.comments+'</div></div>'
+    +'<div class="m"><div class="l">Engagement / reach</div><div class="v">'+pct(r.er,2)+'</div></div>'
+    +'<div class="m"><div class="l">Avg watch time</div><div class="v">'+r.watch.toFixed(1)+' s</div></div>'
+    +'<div class="m"><div class="l">Total watch time</div><div class="v">'+r.hours.toFixed(1)+' h</div></div></div>'
+    +'<div><div style="display:flex;justify-content:space-between;gap:8px;font-size:13px"><span style="color:var(--muted)">Skipped in first 3 seconds</span><span><b>'+pct(r.skip)+'</b> <span class="tag '+(good?'ok':'warn')+'">'+(good?'Below avg':'Above avg')+'</span></span></div>'
+    +'<div class="skipbar" aria-hidden="true"><div style="width:'+(r.skip*100)+'%;background:'+(good?C.good:C.warn)+'"></div></div></div></article>';
+  }).join('');
+}
+$('#sortSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  sortKey=b.dataset.sort;
+  $$('#sortSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  renderReels();
+});
+renderReels();
+const rViews=sum(REELS.map(r=>r.views));
+const top2=REELS[0].views+REELS[1].views;
+$('#reelInsight').innerHTML='<span>Read:</span> Singh Is Kinng and Mirzapur account for '+pct(top2/rViews,0)+' of reel views. The two reels with the lowest skip rates are also the two with the most reach. Dhamaal and Khatta Meetha convert better per viewer (about 2.2% engagement per reach) but reach far fewer people.';
+if(hasChart){
+  charts.reels=new Chart($('#cReels'),{
+    data:{labels:REELS.map(r=>r.title),datasets:[
+      {type:'bar',label:'Views',data:REELS.map(r=>r.views),backgroundColor:C.s1,borderRadius:4,maxBarThickness:30,yAxisID:'y',order:2},
+      {type:'bar',label:'Reach',data:REELS.map(r=>r.reach),backgroundColor:C.s2,borderRadius:4,maxBarThickness:30,yAxisID:'y',order:2},
+      {type:'line',label:'Skip rate',data:REELS.map(r=>+(r.skip*100).toFixed(1)),borderColor:C.s3,backgroundColor:C.s3,borderWidth:2,pointRadius:5,pointHoverRadius:6,yAxisID:'y1',order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{grid:noGrid},y:{beginAtZero:true,grid:grid,ticks:{callback:v=>nf.format(v)}},
+        y1:{position:'right',min:0,max:60,grid:noGrid,ticks:{callback:v=>v+'%'}}},
+      plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>c.dataset.label==='Skip rate'?'Skip rate '+c.parsed.y+'%':c.dataset.label+' '+nf.format(c.parsed.y)}}}}
+  });
+}
+
+/* ---------- Recommendations ---------- */
+const RECS=[
+  {p:'High',t:'Restart a posting rhythm',ev:'No reel appears in the data after 21 Oct. Daily reach fell from 8,000 on 21 Oct to 15 on 12 Nov.',act:'Publish 4 to 5 reels a week for the next month. Batch-edit them in one sitting so the schedule holds.'},
+  {p:'High',t:'Rebuild the formats that won',ev:'Singh Is Kinng and Mirzapur drove 84% of reel views. One was an Akshay Kumar comedy and one a high-intensity web series clip.',act:'Make your next three reels from Akshay Kumar comedies and tense, dialogue-led series scenes.'},
+  {p:'High',t:'Fix the first 3 seconds',ev:'Dhamaal and Khatta Meetha lost 50.8% and 52.4% of viewers within 3 seconds. The two best reels lost 27.7% and 30.1%.',act:'Open on the punchline or the most intense line. Cut slow intros and add a short on-screen hook.'},
+  {p:'High',t:'Ask for the follow',ev:'The best day reached 8,000 accounts and brought 5 new followers, about 0.06% of reach.',act:'End each reel with a short "Follow for daily Bollywood memes" line and repeat it in a pinned comment.'},
+  {p:'Medium',t:'Invite comments',ev:'There were 258 likes and 64 shares in 30 days, but 0 comments.',act:'Close captions with a question, such as "Which dialogue do you still quote?" Reply to every comment in the first hour.'},
+  {p:'Medium',t:'Shorten and clean captions',ev:'Captions are long film summaries. The Khatta Meetha caption still contains stray text that begins with "Cite refs".',act:'Use one hook line and 3 to 5 hashtags. Move cast and streaming details lower down, and remove the stray text.'},
+  {p:'Medium',t:'Write for your core audience',ev:'67% of followers are 25 to 44, 64% are male and 94% are in India, led by Delhi, Noida, Kolkata and Bangalore.',act:'Lean on 2000s Bollywood nostalgia and Hinglish on-screen text. Test a Delhi NCR or Kolkata reference now and then.'},
+  {p:'Low',t:'Test the 3 to 5 PM IST window',ev:'The reels posted at 3:17 PM and 4:52 PM had the highest reach and lowest skip rates. This rests on 4 reels.',act:'Post in that window for two weeks, then compare reach with other slots. Confirm with Insights in the Instagram app.'}
+];
+let done={};
+try{done=JSON.parse(localStorage.getItem('mdai-recs')||'{}')||{};}catch(e){done={};}
+function renderRecs(){
+  $('#recList').innerHTML=RECS.map((r,i)=>'<article class="rec'+(done[i]?' done':'')+'"><div class="rec-h"><h3>'+r.t+'</h3><span class="tag '+(r.p==='High'?'bad':r.p==='Medium'?'warn':'')+'">'+r.p+'</span></div>'
+    +'<p class="ev"><b style="color:var(--fg);font-weight:500">Evidence.</b> '+r.ev+'</p><p class="act"><b>Action.</b> '+r.act+'</p>'
+    +'<label><input type="checkbox" data-i="'+i+'"'+(done[i]?' checked':'')+'> Mark as done</label></article>').join('');
+  setText('recProgress',Object.keys(done).filter(k=>done[k]).length+' of '+RECS.length+' done');
+}
+$('#recList').addEventListener('change',e=>{
+  const c=e.target.closest('input[type=checkbox]');if(!c)return;
+  done[c.dataset.i]=c.checked;
+  try{localStorage.setItem('mdai-recs',JSON.stringify(done));}catch(err){}
+  renderRecs();
+});
+renderRecs();
+
+/* ---------- Live section ---------- */
+const LAST_REEL=Date.parse('2026-10-21T11:22:00Z');
+function istParts(now){const d=new Date(now.getTime()+5.5*3600e3);return {y:d.getUTCFullYear(),m:d.getUTCMonth(),d:d.getUTCDate()};}
+function tick(){
+  const now=new Date();
+  const o={timeZone:'Asia/Kolkata'};
+  setText('clock',now.toLocaleTimeString('en-IN',Object.assign({hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true},o)));
+  setText('clockDate',now.toLocaleDateString('en-IN',Object.assign({weekday:'long',day:'numeric',month:'long',year:'numeric'},o)));
+  const ms=Math.max(0,now-LAST_REEL);
+  setText('sinceReel',Math.floor(ms/864e5)+'d '+Math.floor(ms%864e5/36e5)+'h '+Math.floor(ms%36e5/6e4)+'m');
+  const p=istParts(now);
+  const age=Math.round((Date.UTC(p.y,p.m,p.d)-Date.UTC(2026,10,12))/864e5);
+  setText('dataAge',age<=0?'Data is current':age+' day'+(age===1?'':'s')+' ago');
+}
+tick();setInterval(tick,1000);
+
+const first7=sum(D.reach.slice(0,7))/7,last7=sum(D.reach.slice(-7))/7;
+const mom=(last7-first7)/first7;
+const momEl=$('#momentum');momEl.textContent=(mom>0?'+':'')+(mom*100).toFixed(0)+'%';momEl.style.color=mom<0?'var(--bad)':'var(--good)';
+setText('momentumN','Avg daily reach, last 7 days ('+Math.round(last7)+') vs first 7 days ('+nf.format(Math.round(first7))+')');
+
+function spark(id,arr,color,noteId,label){
+  const w=220,h=36,pad=3,max=Math.max.apply(null,arr),min=Math.min.apply(null,arr);
+  const pts=arr.map((v,i)=>[pad+i*(w-2*pad)/(arr.length-1),h-pad-(max===min?0:(v-min)/(max-min))*(h-2*pad)]);
+  const line=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const area='M'+pts[0][0]+','+(h-pad)+' L'+line.replace(/ /g,' L')+' L'+pts[pts.length-1][0]+','+(h-pad)+' Z';
+  const last=pts[pts.length-1];
+  $('#'+id).innerHTML='<path d="'+area+'" fill="'+rgba(color,.15)+'"/><polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.6" fill="'+color+'"/>';
+  setText(noteId,'Peak '+nf.format(max)+', latest '+nf.format(arr[arr.length-1])+' '+label);
+}
+spark('spReach',D.reach.slice(-14),C.s2,'spReachN','accounts');
+spark('spViews',D.views.slice(-14),C.s1,'spViewsN','views');
+
+const COV=[
+  ['Followers, following, post count','ok','Collected','Read on 14 Nov 2026.'],
+  ['Daily views, reach, new followers','ok','Collected','14 Oct to 12 Nov 2026.'],
+  ['Likes, shares, saves, comments, interactions','ok','Collected','Daily totals for the same window.'],
+  ['Age, gender, country, city','ok','Collected','Lifetime figures for 260 followers.'],
+  ['Reel views, reach, skip rate, watch time','ok','Collected','4 reels in the window.'],
+  ['Follower count history and unfollows','','Unavailable','Not collected, so net growth cannot be shown.'],
+  ['Reach and views from followers vs non-followers','','Unavailable','Exists in Windsor.ai, not pulled yet.'],
+  ['Profile views and link taps','','Unavailable','Not pulled yet.'],
+  ['Stories','','Unavailable','Not pulled yet.'],
+  ['Followers gained per reel','','Unavailable','Instagram does not support it for reels.'],
+  ['When your followers are online','','Unavailable','Not returned by the connector.'],
+  ['Anything before 14 Oct 2026','','Unavailable','Current plan includes 30 days of history.'],
+  ['Automatic refresh of this page','warn','Manual','Ask Claude to pull fresh data and republish.']
+];
+$('#covBody').innerHTML=COV.map(r=>'<tr><td>'+r[0]+'</td><td><span class="tag '+r[1]+'">'+r[2]+'</span></td><td style="color:var(--muted)">'+r[3]+'</td></tr>').join('');
+
+/* ---------- Navigation ---------- */
+const side=$('#side'),scrim=$('#scrim'),menuBtn=$('#menuBtn');
+function drawer(open){
+  side.classList.toggle('open',open);scrim.classList.toggle('show',open);
+  menuBtn.setAttribute('aria-expanded',String(open));
+}
+menuBtn.addEventListener('click',()=>drawer(!side.classList.contains('open')));
+scrim.addEventListener('click',()=>drawer(false));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')drawer(false);});
+$('#nav').addEventListener('click',e=>{
+  const b=e.target.closest('.navlink');if(!b)return;
+  const t=document.getElementById(b.dataset.target);
+  if(t)t.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  drawer(false);
+});
+if('IntersectionObserver' in window){
+  const links=$$('.navlink');
+  const io=new IntersectionObserver(es=>{
+    es.forEach(en=>{if(en.isIntersecting){links.forEach(l=>l.classList.toggle('active',l.dataset.target===en.target.id));}});
+  },{rootMargin:'-20% 0px -70% 0px'});
+  $$('.sec').forEach(s=>io.observe(s));
+}
+
+buildCharts();
+renderRange();
+})();
+</script>

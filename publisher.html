@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Publish Reels | MEME DEALER AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0b0f0e; --surface:#121816; --surface-2:#18201d; --line:#25302c;
+  --fg:#e9efec; --muted:#93a39c; --faint:#76857f;
+  --accent:#e9b44c; --accent-ink:#1a1405;
+  --good:#5ad18f; --warn:#f0883e; --bad:#ff5c6c; --info:#4cc9b0;
+  --font-display:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--font-body);
+  padding-block:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:max(16px,env(safe-area-inset-top,0px));
+  padding-bottom:max(24px,env(safe-area-inset-bottom,0px));
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+a{color:var(--accent)}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;display:grid;gap:16px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.top h1{font:700 clamp(24px,6vw,32px)/1.15 var(--font-display)}
+.top h1 span{color:var(--accent)}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.pill-link{display:inline-block;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.card h2{font:600 18px/1.25 var(--font-display);margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);font-weight:600;text-decoration:none;color:var(--fg)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad)}
+.btn.small{min-height:36px;padding:0 14px;font-size:13px;border-radius:10px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.banner{border-radius:12px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.banner.ok{border-color:rgba(90,209,143,.5);color:var(--good)}
+.banner.bad{border-color:rgba(255,92,108,.5);color:var(--bad)}
+.banner.warn{border-color:rgba(240,136,62,.5);color:var(--warn)}
+.status-line{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.status-line .dot{margin-top:7px}
+.status-line span:last-child{min-width:0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}
+.dot.on{background:var(--good);box-shadow:0 0 0 4px rgba(90,209,143,.18)}
+.dot.warn{background:var(--warn)}
+.copybox{display:flex;gap:8px;align-items:stretch;margin-top:10px}
+.copybox code{flex:1;min-width:0;overflow-wrap:anywhere;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px}
+label.f{display:block;font-weight:500;margin:16px 0 6px}
+textarea{width:100%;min-height:150px;resize:vertical;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px;line-height:1.5}
+input[type=datetime-local]{width:100%;min-height:46px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.counter{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px;margin-top:6px}
+.counter .over{color:var(--bad)}
+.drop{display:grid;gap:6px;place-items:center;text-align:center;border:1px dashed var(--faint);border-radius:12px;padding:22px 14px;background:var(--surface-2);cursor:pointer}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.drop strong{font-weight:600}
+.drop small{color:var(--muted)}
+video{display:block;width:100%;max-height:340px;background:#000;border-radius:12px;margin-top:12px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.choice label{display:flex;align-items:center;justify-content:center;min-height:46px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);cursor:pointer;color:var(--muted);text-align:center;padding:0 8px}
+.choice input{position:absolute;opacity:0}
+.choice input:checked+span{color:var(--accent-ink)}
+.choice label:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.choice label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;color:var(--fg)}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:12px}
+.bar div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.msg{margin-top:12px;font-size:14px}
+.msg.bad{color:var(--bad)}
+.queue{display:grid;gap:12px}
+.item{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:14px;display:grid;gap:10px;min-width:0}
+.item-h{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;border-radius:7px;padding:3px 9px;border:1px solid var(--line);color:var(--muted)}
+.tag.scheduled{color:var(--info);border-color:rgba(76,201,176,.5)}
+.tag.creating,.tag.processing,.tag.publishing{color:var(--accent);border-color:rgba(233,180,76,.5)}
+.tag.published{color:var(--good);border-color:rgba(90,209,143,.5)}
+.tag.failed{color:var(--bad);border-color:rgba(255,92,108,.5)}
+.when{color:var(--muted);font-size:13px}
+.cap{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;max-height:5.2em;overflow:hidden}
+.err{border:1px solid rgba(255,92,108,.45);border-radius:10px;padding:10px 12px;color:var(--fg);font-size:14px;overflow-wrap:anywhere}
+.err b{color:var(--bad)}
+details summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:6px}
+details pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:var(--muted);margin:6px 0 0}
+.editor{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.empty{color:var(--muted);text-align:center;padding:18px 8px}
+.steps{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+.steps li{margin:4px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <h1>Publish <span>Reels</span></h1>
+    <div class="links"><a class="pill-link" href="/">&larr; Dashboard</a><a class="pill-link" href="/logout">Log out</a></div>
+  </div>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <!-- Connection -->
+  <section class="card" id="connectCard">
+    <h2>Instagram connection</h2>
+    <p class="sub">Direct Instagram login. No Facebook account or Facebook Page is used.</p>
+    <div class="status-line"><span class="dot" id="dot"></span><span id="connText">Checking...</span></div>
+    <div class="row" id="connButtons"></div>
+    <div id="setupHelp" hidden>
+      <p class="sub" style="margin-top:14px">Before you press Connect, this exact address must be saved in your Meta app under "Valid OAuth redirect URIs":</p>
+      <div class="copybox"><code id="redirectUri"></code><button class="btn small" id="copyBtn" type="button">Copy</button></div>
+    </div>
+  </section>
+
+  <!-- New Reel -->
+  <section class="card" id="newCard">
+    <h2>New Reel</h2>
+    <p class="sub">Choose a video, write the caption, then post it now or pick a time.</p>
+
+    <label class="drop" id="drop" for="file">
+      <input id="file" type="file" accept="video/mp4,video/quicktime,.mp4,.mov">
+      <strong id="dropTitle">Tap to choose a video</strong>
+      <small id="dropHint">MP4 works best. Vertical 9:16 video. Up to 300 MB.</small>
+    </label>
+    <video id="preview" controls playsinline muted hidden></video>
+
+    <label class="f" for="caption">Caption</label>
+    <textarea id="caption" placeholder="Write your caption and hashtags here..."></textarea>
+    <div class="counter"><span id="tagCount">0 of 30 hashtags</span><span id="charCount">0 / 2,200</span></div>
+
+    <label class="check"><input type="checkbox" id="feed" checked><span>Also show this Reel on my profile grid</span></label>
+
+    <label class="f" style="margin-bottom:0">When to post</label>
+    <div class="choice" role="radiogroup" aria-label="When to post">
+      <label><input type="radio" name="mode" value="now" checked><span>Post now</span></label>
+      <label><input type="radio" name="mode" value="schedule"><span>Schedule</span></label>
+    </div>
+    <div id="timeBox" hidden>
+      <label class="f" for="when">Date and time (your phone's time)</label>
+      <input type="datetime-local" id="when">
+    </div>
+
+    <div class="row" style="margin-top:20px">
+      <button class="btn primary" id="submit" type="button" disabled style="flex:1">Choose a video first</button>
+    </div>
+    <div class="bar" id="bar" hidden><div id="barFill"></div></div>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- Queue -->
+  <section class="card" id="queueCard">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <h2 style="margin:0">Posting status</h2>
+      <button class="btn small" id="refreshBtn" type="button">Refresh</button>
+    </div>
+    <p class="sub">Updates by itself. Waiting, working, posted and failed Reels all show here.</p>
+    <div class="queue" id="queue"><div class="empty">Loading...</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Good to know</h2>
+    <ol class="steps">
+      <li>Keep this page's address private. Anyone who has your password can post to your account.</li>
+      <li>Instagram allows up to 100 posts per day through apps.</li>
+      <li>Your Instagram login lasts 60 days. The server renews it by itself. If it ever stops working, press Connect Instagram again.</li>
+      <li>Scheduled Reels are posted by the server, so you can close this page.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s);};
+var state={status:null,posts:[],file:null,uploading:false,editing:null};
+var MAXC=2200,MAXT=30;
+
+function api(method,url,body){
+  return fetch(url,{method:method,headers:Object.assign({'X-Requested-With':'md'},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined,credentials:'same-origin'})
+    .then(function(r){
+      if(r.status===401){location.href='/login';throw new Error('login');}
+      return r.json().catch(function(){return {error:'The server sent an unreadable answer.'};}).then(function(d){
+        if(!r.ok)throw new Error(d.error||'Something went wrong.');
+        return d;
+      });
+    });
+}
+function fmtTime(iso){
+  try{return new Date(iso).toLocaleString(undefined,{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});}catch(e){return iso;}
+}
+function fmtSize(b){return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB';}
+function banner(kind,text){var b=$('#banner');if(!text){b.hidden=true;return;}b.className='banner '+kind;b.textContent=text;b.hidden=false;}
+
+/* ---------- Connection ---------- */
+function renderConnection(){
+  var s=state.status;if(!s)return;
+  var dot=$('#dot'),txt=$('#connText'),btns=$('#connButtons');
+  btns.textContent='';
+  function mk(label,cls,href,onclick){
+    var el=document.createElement(href?'a':'button');
+    el.className='btn '+cls;el.textContent=label;
+    if(href)el.href=href;else{el.type='button';el.onclick=onclick;}
+    btns.appendChild(el);return el;
+  }
+  if(!s.connected){
+    dot.className='dot';txt.textContent='Not connected';
+    mk('Connect Instagram','primary','/auth/instagram');
+    $('#setupHelp').hidden=false;
+  }else if(s.expired){
+    dot.className='dot warn';txt.textContent='Login expired for @'+s.username;
+    mk('Connect Instagram again','primary','/auth/instagram');
+    $('#setupHelp').hidden=true;
+  }else{
+    dot.className='dot on';
+    txt.textContent='Connected as @'+s.username+' ('+(s.accountType==='MEDIA_CREATOR'?'Creator':s.accountType==='BUSINESS'?'Business':s.accountType||'Professional')+'). Login valid for about '+s.daysLeft+' more days.';
+    mk('Reconnect','', '/auth/instagram');
+    mk('Disconnect','danger',null,function(){
+      var b=this;
+      if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Tap again to disconnect';setTimeout(function(){b.dataset.sure='';b.textContent='Disconnect';},4000);return;}
+      api('POST','/api/disconnect').then(function(){loadStatus();banner('warn','Disconnected. Your saved Instagram login was deleted from the server.');}).catch(function(e){banner('bad',e.message);});
+    });
+    $('#setupHelp').hidden=true;
+  }
+  $('#redirectUri').textContent=s.redirectUri;
+  $('#dropHint').textContent='MP4 works best. Vertical 9:16 video. Up to '+s.maxUploadMb+' MB.';
+  updateSubmit();
+}
+function loadStatus(){return api('GET','/api/status').then(function(s){state.status=s;renderConnection();}).catch(function(e){banner('bad',e.message);});}
+
+$('#copyBtn').addEventListener('click',function(){
+  var t=$('#redirectUri').textContent,b=this;
+  function done(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy';},1500);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){sel();});}else sel();
+  function sel(){var r=document.createRange();r.selectNodeContents($('#redirectUri'));var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected, now copy';}
+});
+
+/* ---------- Form ---------- */
+function mode(){return document.querySelector('input[name=mode]:checked').value;}
+function tagCount(t){var m=t.match(/#[\p{L}\p{N}_]+/gu);return m?m.length:0;}
+function updateCounters(){
+  var t=$('#caption').value,n=t.length,h=tagCount(t);
+  $('#charCount').textContent=n.toLocaleString()+' / 2,200';
+  $('#charCount').className=n>MAXC?'over':'';
+  $('#tagCount').textContent=h+' of 30 hashtags';
+  $('#tagCount').className=h>MAXT?'over':'';
+  updateSubmit();
+}
+function localInputValue(d){
+  var p=function(n){return String(n).padStart(2,'0');};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+}
+function setDefaultTime(){
+  var d=new Date(Date.now()+60*60*1000);d.setMinutes(0,0,0);d.setHours(d.getHours()+1);
+  $('#when').value=localInputValue(d);
+  $('#when').min=localInputValue(new Date(Date.now()+5*60*1000));
+}
+function updateSubmit(){
+  var b=$('#submit'),s=state.status,t=$('#caption').value;
+  var connected=s&&s.connected&&!s.expired;
+  var bad=t.length>MAXC||tagCount(t)>MAXT;
+  b.disabled=state.uploading||!state.file||!connected||bad;
+  if(state.uploading)b.textContent='Uploading...';
+  else if(!connected)b.textContent='Connect Instagram first';
+  else if(!state.file)b.textContent='Choose a video first';
+  else if(bad)b.textContent='Fix the caption first';
+  else b.textContent=mode()==='now'?'Upload and post now':'Upload and schedule';
+}
+document.querySelectorAll('input[name=mode]').forEach(function(r){r.addEventListener('change',function(){
+  $('#timeBox').hidden=mode()!=='schedule';if(mode()==='schedule')setDefaultTime();updateSubmit();});});
+$('#caption').addEventListener('input',updateCounters);
+
+$('#file').addEventListener('change',function(){
+  var f=this.files&&this.files[0];
+  $('#msg').textContent='';$('#msg').className='msg';
+  if(!f){state.file=null;$('#preview').hidden=true;$('#dropTitle').textContent='Tap to choose a video';updateSubmit();return;}
+  var ok=/\.(mp4|mov)$/i.test(f.name);
+  var max=(state.status?state.status.maxUploadMb:300)*1048576;
+  if(!ok){state.file=null;$('#msg').textContent='Please choose an MP4 or MOV video.';$('#msg').className='msg bad';updateSubmit();return;}
+  if(f.size>max){state.file=null;$('#msg').textContent='This video is too big ('+fmtSize(f.size)+'). The limit is '+Math.round(max/1048576)+' MB.';$('#msg').className='msg bad';updateSubmit();return;}
+  state.file=f;
+  $('#dropTitle').textContent=f.name;
+  $('#dropHint').textContent=fmtSize(f.size)+'. Tap to choose a different video.';
+  var v=$('#preview');
+  if(v.dataset.url)URL.revokeObjectURL(v.dataset.url);
+  v.dataset.url=URL.createObjectURL(f);v.src=v.dataset.url;v.hidden=false;
+  updateSubmit();
+});
+
+function resetForm(){
+  state.file=null;$('#file').value='';$('#caption').value='';
+  var v=$('#preview');v.pause();v.removeAttribute('src');v.load();v.hidden=true;
+  $('#dropTitle').textContent='Tap to choose a video';
+  if(state.status)$('#dropHint').textContent='MP4 works best. Vertical 9:16 video. Up to '+state.status.maxUploadMb+' MB.';
+  document.querySelector('input[name=mode][value=now]').checked=true;$('#timeBox').hidden=true;
+  updateCounters();
+}
+
+function upload(file,onProgress){
+  return new Promise(function(resolve,reject){
+    var x=new XMLHttpRequest();
+    x.open('POST','/api/upload?name='+encodeURIComponent(file.name));
+    x.setRequestHeader('X-Requested-With','md');
+    x.upload.onprogress=function(e){if(e.lengthComputable)onProgress(e.loaded/e.total);};
+    x.onload=function(){
+      if(x.status===401){location.href='/login';return;}
+      var d={};try{d=JSON.parse(x.responseText);}catch(e){}
+      if(x.status>=200&&x.status<300)resolve(d);else reject(new Error(d.error||'The upload failed.'));
+    };
+    x.onerror=function(){reject(new Error('The upload was interrupted. Check your internet and try again.'));};
+    x.send(file);
+  });
+}
+
+$('#submit').addEventListener('click',function(){
+  if(!state.file||state.uploading)return;
+  var m=mode(),body={mode:m,caption:$('#caption').value,shareToFeed:$('#feed').checked};
+  if(m==='schedule'){
+    var d=new Date($('#when').value);
+    if(!$('#when').value||isNaN(d.getTime())){$('#msg').textContent='Pick a date and time.';$('#msg').className='msg bad';return;}
+    body.publishAt=d.toISOString();
+  }
+  state.uploading=true;updateSubmit();
+  var bar=$('#bar'),fill=$('#barFill');bar.hidden=false;fill.style.width='0';
+  $('#msg').className='msg';$('#msg').textContent='Uploading the video. Keep this page open until it finishes.';
+  upload(state.file,function(p){fill.style.width=Math.round(p*100)+'%';$('#msg').textContent='Uploading... '+Math.round(p*100)+'%';})
+    .then(function(u){body.uploadId=u.uploadId;return api('POST','/api/posts',body);})
+    .then(function(){
+      bar.hidden=true;state.uploading=false;resetForm();
+      $('#msg').className='msg';
+      $('#msg').textContent=m==='now'?'Uploaded. It is being posted now. Watch the status below.':'Scheduled. You can close this page.';
+      loadPosts();
+      $('#queueCard').scrollIntoView({behavior:'smooth',block:'start'});
+    })
+    .catch(function(e){bar.hidden=true;state.uploading=false;updateSubmit();$('#msg').className='msg bad';$('#msg').textContent=e.message;});
+});
+
+/* ---------- Queue ---------- */
+var LABEL={scheduled:'Waiting',creating:'Starting',processing:'Instagram is processing',publishing:'Publishing',published:'Posted',failed:'Failed',cancelled:'Cancelled'};
+function sortPosts(a){
+  var rank={creating:0,processing:0,publishing:0,failed:1,scheduled:2,published:3,cancelled:4};
+  return a.slice().sort(function(x,y){
+    if(rank[x.status]!==rank[y.status])return rank[x.status]-rank[y.status];
+    if(x.status==='scheduled')return Date.parse(x.publishAt)-Date.parse(y.publishAt);
+    return y.updatedAt-x.updatedAt;
+  });
+}
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+
+function renderQueue(){
+  var q=$('#queue');
+  var focused=document.activeElement;
+  if(state.editing&&focused&&q.contains(focused))return; // do not disturb typing
+  q.textContent='';
+  if(!state.posts.length){q.appendChild(el('div','empty','No Reels yet. Your first one will show up here.'));return;}
+  sortPosts(state.posts).forEach(function(p){
+    var it=el('div','item');
+    var h=el('div','item-h');
+    h.appendChild(el('span','tag '+p.status,LABEL[p.status]||p.status));
+    var when='';
+    if(p.status==='scheduled')when='Posts '+fmtTime(p.publishAt);
+    else if(p.status==='published')when='Posted '+fmtTime(p.publishedAt||p.updatedAt);
+    else if(p.status==='failed')when='Failed '+fmtTime(p.updatedAt);
+    else if(p.status==='cancelled')when='Cancelled';
+    else when='Started '+fmtTime(p.updatedAt);
+    h.appendChild(el('span','when',when));
+    it.appendChild(h);
+    it.appendChild(el('div','cap',p.caption||'(no caption)'));
+    it.appendChild(el('div','when',(p.filename||'video')+(p.size?' · '+fmtSize(p.size):'')));
+    if(p.status==='failed'&&p.error){
+      var e=el('div','err');var b=el('b',null,'What went wrong: ');e.appendChild(b);e.appendChild(document.createTextNode(p.error));
+      if(p.errorDetail){var d=document.createElement('details');d.appendChild(el('summary',null,'Technical details'));d.appendChild(el('pre',null,p.errorDetail));e.appendChild(d);}
+      it.appendChild(e);
+    }
+    var actions=el('div','row');
+    function act(label,cls,fn){var b=el('button','btn small '+(cls||''),label);b.type='button';b.onclick=function(){fn(b);};actions.appendChild(b);return b;}
+    if(p.status==='published'&&p.permalink){var a=el('a','btn small','Open on Instagram');a.href=p.permalink;a.target='_blank';a.rel='noopener';actions.appendChild(a);}
+    if(p.status==='scheduled'){
+      act('Edit','',function(){state.editing=p.id;renderQueue();});
+      act('Cancel','danger',function(b){
+        if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Tap again to cancel';setTimeout(function(){b.dataset.sure='';b.textContent='Cancel';},4000);return;}
+        api('POST','/api/posts/'+p.id+'/cancel').then(loadPosts).catch(function(e){banner('bad',e.message);});
+      });
+    }
+    if(p.status==='failed'){
+      act('Try again','primary',function(){api('POST','/api/posts/'+p.id+'/retry').then(loadPosts).catch(function(e){banner('bad',e.message);});});
+    }
+    if(p.status==='failed'||p.status==='published'||p.status==='cancelled'){
+      act('Remove','',function(){api('DELETE','/api/posts/'+p.id).then(loadPosts).catch(function(e){banner('bad',e.message);});});
+    }
+    if(actions.childNodes.length)it.appendChild(actions);
+
+    if(state.editing===p.id&&p.status==='scheduled'){
+      var ed=el('div','editor');
+      var ta=document.createElement('textarea');ta.value=p.caption;ta.style.minHeight='110px';ta.setAttribute('aria-label','Caption');
+      var inp=document.createElement('input');inp.type='datetime-local';inp.value=localInputValue(new Date(p.publishAt));inp.setAttribute('aria-label','Date and time');
+      var msg=el('div','msg');
+      var r=el('div','row');
+      var save=el('button','btn small primary','Save changes');save.type='button';
+      var cancel=el('button','btn small','Close');cancel.type='button';
+      save.onclick=function(){
+        var d=new Date(inp.value);
+        api('PATCH','/api/posts/'+p.id,{caption:ta.value,publishAt:isNaN(d.getTime())?undefined:d.toISOString()})
+          .then(function(){state.editing=null;loadPosts();}).catch(function(e){msg.className='msg bad';msg.textContent=e.message;});
+      };
+      cancel.onclick=function(){state.editing=null;renderQueue();};
+      r.appendChild(save);r.appendChild(cancel);
+      ed.appendChild(ta);ed.appendChild(inp);ed.appendChild(r);ed.appendChild(msg);
+      it.appendChild(ed);
+    }
+    q.appendChild(it);
+  });
+}
+var pollTimer=null;
+function loadPosts(){
+  return api('GET','/api/posts').then(function(d){
+    state.posts=d.posts;renderQueue();
+    var busy=d.posts.some(function(p){return ['creating','processing','publishing'].indexOf(p.status)>=0;});
+    clearTimeout(pollTimer);pollTimer=setTimeout(loadPosts,busy?3000:15000);
+  }).catch(function(e){if(e.message!=='login'){$('#queue').textContent='';$('#queue').appendChild(el('div','empty',e.message));}});
+}
+$('#refreshBtn').addEventListener('click',function(){loadStatus();loadPosts();});
+document.addEventListener('visibilitychange',function(){if(!document.hidden){loadStatus();loadPosts();}});
+
+/* ---------- Start ---------- */
+(function(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('connect')==='ok')banner('ok','Instagram connected. You can upload a Reel now.');
+  else if(q.get('connect')==='failed')banner('bad','Could not connect Instagram. '+(q.get('reason')||'Please try again.'));
+  if(q.get('connect'))history.replaceState(null,'','/publisher');
+})();
+updateCounters();
+loadStatus();
+loadPosts();
+})();
+</script>
+</body>
+</html>
